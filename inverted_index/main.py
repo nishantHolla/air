@@ -44,3 +44,16 @@ elif sys.argv[1] == "query":
     result = ir.query(op, a, b)
     for r in result:
         print(f"{r['name']}\n{r['review']}\n\n")
+
+elif sys.argv[1] == "test_tokenizer":
+    with open(DATASET_FILE, "r", encoding="latin-1") as f:
+        data = f.readlines()
+
+    documents = []
+    for i, line in enumerate(data):
+        movie_name, review = line.split("\t")
+        documents.append({"name": movie_name.strip(), "review": review.strip()})
+
+    print(documents[0]["review"])
+    print()
+    print(ir._tokenize(documents[0]["review"]))

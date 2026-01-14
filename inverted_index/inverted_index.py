@@ -1,6 +1,19 @@
 import string
 import json
 from pathlib import Path
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+nltk.download("stopwords")
+nltk.download("punkt")
+nltk.download("punkt_tab")
+nltk.download("wordnet")
+
+
+stop_words = set(stopwords.words("english"))
+lemmatizer = WordNetLemmatizer()
 
 T_index = dict[str, list[int]]
 T_document = dict[str, str]
@@ -13,13 +26,21 @@ class InvertedIndex:
         self._index: T_index = dict()
         self._database: T_database = list()
         self._vocab: T_vocab = list()
+        self._translator = str.maketrans("", "", string.punctuation)
+        self.REMOVE_STOP_WORDS = True
+        self.LEMMATIZE = True
 
     def _tokenize(self, text: str) -> list[str]:
-        text = text.strip()
-        translator = str.maketrans("", "", string.punctuation)
-        text = text.translate(translator)
+        text = text.strip().translate(self._translator)
+        tokens = word_tokenize(text)
 
-        return list(set(text.split(" ")))
+        if self.REMOVE_STOP_WORDS:
+            tokens = [w for w in tokens if w.lower() not in stop_words]
+
+        if self.LEMMATIZE:
+            tokens = [lemmatizer.lemmatize(w) for w in tokens]
+
+        return tokens
 
     def _and(self, a: str, b: str) -> list[int]:
         a_set = set(self._index.get(a, []))

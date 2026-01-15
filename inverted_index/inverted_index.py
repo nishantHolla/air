@@ -30,7 +30,7 @@ class InvertedIndex:
         self.REMOVE_STOP_WORDS = True
         self.LEMMATIZE = True
 
-    def _tokenize(self, text: str) -> list[str]:
+    def _tokenize(self, text: str) -> set[str]:
         text = text.strip().translate(self._translator)
         tokens = word_tokenize(text)
 
@@ -40,7 +40,7 @@ class InvertedIndex:
         if self.LEMMATIZE:
             tokens = [lemmatizer.lemmatize(w) for w in tokens]
 
-        return tokens
+        return set(tokens)
 
     def _and(self, a: str, b: str) -> list[int]:
         a_set = set(self._index.get(a, []))
@@ -71,28 +71,29 @@ class InvertedIndex:
                 else:
                     self._index[token].append(document_id)
 
-    def save(self, index_path: Path, database_path: Path) -> None:
+    def save(self, index_path: Path | str, database_path: Path | str) -> None:
         with open(index_path, "w") as f:
             json.dump(self._index, f, indent=4)
 
         with open(database_path, "w") as f:
             json.dump(self._database, f, indent=4)
 
-    def load(self, index_path: Path, database_path: Path) -> None:
+    def load(self, index_path: Path | str, database_path: Path | str) -> None:
         with open(index_path, "r") as f:
             self._index = json.load(f)
 
         with open(database_path, "r") as f:
             self._database = json.load(f)
 
-    def query(self, op: str, a: str, b: str | None = None) -> T_document:
+    def query(self, op: str, a: str, b: str | None = None) -> list[T_document]:
         if op != "not" and b is None:
             return []
 
-        if op == "and":
+        result = []
+        if op == "and" and b:
             result = self._and(a, b)
 
-        elif op == "or":
+        elif op == "or" and b:
             result = self._or(a, b)
 
         elif op == "not":

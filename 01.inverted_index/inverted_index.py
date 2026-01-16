@@ -6,6 +6,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
+from node import Node
+
 nltk.download("stopwords")
 nltk.download("punkt")
 nltk.download("punkt_tab")
@@ -15,7 +17,7 @@ nltk.download("wordnet")
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
-T_index = dict[str, list[int]]
+T_index = dict[str, dict[str, Node]]
 T_document = dict[str, str]
 T_database = list[T_document]
 T_vocab = list[str]
@@ -43,20 +45,78 @@ class InvertedIndex:
         return set(tokens)
 
     def _and(self, a: str, b: str) -> list[int]:
-        a_set = set(self._index.get(a, []))
-        b_set = set(self._index.get(b, []))
+        if a not in self._index or b not in self._index:
+            return []
 
-        return list(a_set.intersection(b_set))
+        result = []
+
+        a_node = self._index[a]["nodes"]
+        b_node = self._index[b]["nodes"]
+
+        while a_node and b_node:
+            if a_node.value == b_node.value:
+                result.append(a_node.value)
+                a_node = a_node.next
+                b_node = b_node.next
+
+            elif a_node.value < b_node.value:
+                a_node = a_node.next
+            else:
+                b_node = b_node.next
+
+        return result
 
     def _or(self, a: str, b: str) -> list[int]:
-        a_set = set(self._index.get(a, []))
-        b_set = set(self._index.get(b, []))
+        if a not in self._index and b not in self._index:
+            return []
 
-        return list(a_set.union(b_set))
+        if a not in self._index:
+            return Node.to_list(self._index[b]["nodes"])
+
+        if b not in self._index:
+            return Node.to_list(self._index[a]["nodes"])
+
+        result = []
+
+        a_node = self._index[a]["nodes"]
+        b_node = self._index[b]["nodes"]
+
+        while a_node and b_node:
+            if a_node.value == b_node.value:
+                result.append(a_node.value)
+                a_node = a_node.next
+                b_node = b_node.next
+
+            elif a_node.value < b_node.value:
+                result.append(a_node.value)
+                a_node = a_node.next
+
+            else:
+                result.append(b_node.value)
+                b_node = b_node.next
+
+        while a_node:
+            result.append(a_node.value)
+            a_node = a_node.next
+
+        while b_node:
+            result.append(b_node.value)
+            b_node = b_node.next
+
+        return result
 
     def _not(self, a: str) -> list[int]:
-        d = range(0, len(self._database))
-        return list(set(d) - set(self._index.get(a, [])))
+        if a not in self._index:
+            return list(range(0, len(self._database)))
+
+        a_node = self._index[a]["nodes"]
+        result = []
+
+        prev = 0
+        while a_node and prev < len(self._database):
+            prev = a_node.value + 1
+
+        return result
 
     def index(self, documents: list[T_document]) -> None:
         db_size = len(self._database)
@@ -66,21 +126,32 @@ class InvertedIndex:
 
             self._database.append(document)
             for token in tokens:
+                n = Node(document_id)
                 if token not in self._index:
-                    self._index[token] = [document_id]
+                    self._index[token] = {"tail": n, "nodes": n}
                 else:
-                    self._index[token].append(document_id)
+                    self._index[token]["tail"].next = n
+                    self._index[token]["tail"] = n
 
     def save(self, index_path: Path | str, database_path: Path | str) -> None:
+        index = dict()
+        for k, v in self._index.items():
+            index[k] = Node.to_list(v["nodes"])
+
         with open(index_path, "w") as f:
-            json.dump(self._index, f, indent=4)
+            json.dump(index, f, indent=4)
 
         with open(database_path, "w") as f:
             json.dump(self._database, f, indent=4)
 
     def load(self, index_path: Path | str, database_path: Path | str) -> None:
         with open(index_path, "r") as f:
-            self._index = json.load(f)
+            index = json.load(f)
+
+        for k, v in index.items():
+            n = Node.from_list(v)
+            if n:
+                self._index[k] = {"tail": Node.get_tail(n), "nodes": n}
 
         with open(database_path, "r") as f:
             self._database = json.load(f)

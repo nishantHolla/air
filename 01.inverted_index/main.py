@@ -45,6 +45,8 @@ elif sys.argv[1] == "query":
     for r in result:
         print(f"{r['name']}\n{r['review']}\n\n")
 
+    print(f"Found {len(result)} results")
+
 elif sys.argv[1] == "test_tokenizer":
     with open(DATASET_FILE, "r", encoding="latin-1") as f:
         data = f.readlines()

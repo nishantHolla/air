@@ -143,18 +143,18 @@ if __name__ == "__main__":
             operations[o]["count"] += 1
 
         print(
-            f"Index time: {index_time:.4f}s for {len(documents)} documents"
-            f" => {index_time / len(documents)}s per doc"
+            f"Index time: {index_time:.8f}s for {len(documents)} documents"
+            f" => {index_time / len(documents):.8f}s per doc"
         )
 
         print(
-            f"Query time: {query_time:.4f}s for {len(tests)} tests"
-            f" => {query_time / len(tests)}s per test"
+            f"Query time: {query_time:.8f}s for {len(tests)} tests"
+            f" => {query_time / len(tests):.8f}s per test"
         )
         for o, v in operations.items():
             print(
-                f"     {o} operation: {v['time']}s for {v['count']} operations"
-                f" => {v['time'] / v['count']}s per operation"
+                f"     {o} operation: {v['time']:.8f}s for {v['count']} operations"
+                f" => {v['time'] / v['count']:.8f}s per operation"
             )
 
     elif sys.argv[1] == "generate_test":

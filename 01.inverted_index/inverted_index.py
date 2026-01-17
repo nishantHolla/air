@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
-from node import ListNode
+from list_node import ListNode
 
 T_index = dict[str, dict[str, ListNode]]
 T_document = dict[str, str]
@@ -155,16 +155,22 @@ class InvertedIndex:
             result (list[int]): List of document ids that is the complement of the postings
         """
         if a not in self._vocab:
-            return []
+            return list(range(len(self._database)))
 
         a_node: ListNode | None = self._index[a]["nodes"]
         result: list[int] = []
 
         prev: int = 0
-        while a_node and prev < len(self._database):
-            result += list(range(prev, a_node.value))
+        N: int = len(self._database)
+
+        while a_node:
+            if prev < a_node.value:
+                result.extend(range(prev, a_node.value))
             prev = a_node.value + 1
             a_node = a_node.next
+
+        if prev < N:
+            result.extend(range(prev, N))
 
         return result
 

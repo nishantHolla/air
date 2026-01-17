@@ -8,10 +8,10 @@ from nltk.stem import WordNetLemmatizer
 
 from node import Node
 
-nltk.download("stopwords")
-nltk.download("punkt")
-nltk.download("punkt_tab")
-nltk.download("wordnet")
+nltk.download("stopwords", quiet=True)
+nltk.download("punkt", quiet=True)
+nltk.download("punkt_tab", quiet=True)
+nltk.download("wordnet", quiet=True)
 
 
 stop_words = set(stopwords.words("english"))
@@ -20,14 +20,14 @@ lemmatizer = WordNetLemmatizer()
 T_index = dict[str, dict[str, Node]]
 T_document = dict[str, str]
 T_database = list[T_document]
-T_vocab = list[str]
+T_vocab = set[str]
 
 
 class InvertedIndex:
     def __init__(self):
         self._index: T_index = dict()
         self._database: T_database = list()
-        self._vocab: T_vocab = list()
+        self._vocab: T_vocab = set()
         self._translator = str.maketrans("", "", string.punctuation)
         self.REMOVE_STOP_WORDS = True
         self.LEMMATIZE = True
@@ -106,15 +106,17 @@ class InvertedIndex:
         return result
 
     def _not(self, a: str) -> list[int]:
-        if a not in self._index:
-            return list(range(0, len(self._database)))
+        if a not in self._vocab:
+            return []
 
         a_node = self._index[a]["nodes"]
         result = []
 
         prev = 0
         while a_node and prev < len(self._database):
+            result += list(range(prev, a_node.value))
             prev = a_node.value + 1
+            a_node = a_node.next
 
         return result
 
@@ -122,6 +124,8 @@ class InvertedIndex:
         db_size = len(self._database)
         for i, document in enumerate(documents):
             tokens = self._tokenize(document["review"])
+            for t in tokens:
+                self._vocab.add(t)
             document_id = db_size + i
 
             self._database.append(document)
@@ -153,6 +157,8 @@ class InvertedIndex:
             if n:
                 self._index[k] = {"tail": Node.get_tail(n), "nodes": n}
 
+        self._vocab = set(self._index.keys())
+
         with open(database_path, "r") as f:
             self._database = json.load(f)
 
@@ -175,3 +181,6 @@ class InvertedIndex:
             documents.append(self._database[i])
 
         return documents
+
+    def get_vocab(self) -> T_vocab:
+        return self._vocab

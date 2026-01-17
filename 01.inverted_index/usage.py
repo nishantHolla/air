@@ -21,7 +21,7 @@ GENERATE_TEST_USAGE = """
     generate_test: Generate a test.txt file with given number of test cases
         arg0: Path to the directory that contains the index.json and database.json
         arg1: Count of number of test cases to generate
-        arg1: Path to the test.txt file to be generated
+        arg2: Path to the test.txt file to be generated
 """
 
 TEST_TOKENIZER_ACTION_USAGE = """

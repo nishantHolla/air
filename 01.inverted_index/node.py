@@ -1,10 +1,19 @@
-class Node:
+class ListNode:
     @classmethod
-    def to_list(cls, head: "Node | None") -> list[int]:
+    def to_list(cls, head: "ListNode | None") -> list[int]:
+        """
+        Convert a linked list to a python list
+
+        Args:
+            head (ListNode | None): The first node in the list
+
+        Returns:
+            result (list[int]): The converted list of integers
+        """
         if not head:
             return []
 
-        result = []
+        result: list[int] = []
         while head:
             result.append(head.value)
             head = head.next
@@ -12,28 +21,38 @@ class Node:
         return result
 
     @classmethod
-    def from_list(cls, values: list[int]) -> "Node | None":
-        if len(values) == 0:
-            return None
-        elif len(values) == 1:
-            return Node(values[0])
+    def from_list(cls, values: list[int]) -> "tuple[ListNode | None, ListNode | None]":
+        """
+        Convert a python list to a linked list
 
-        head = Node(values[0])
-        tail = head
+        Args:
+            values (list[int]): Python list to convert
+
+        Returns:
+            (head, tail) tuple(ListNode | None, ListNode | None): The head and tail node of the linked list
+        """
+        if len(values) == 0:
+            return (None, None)
+        elif len(values) == 1:
+            node: ListNode = ListNode(values[0])
+            return (node, node)
+
+        head: ListNode = ListNode(values[0])
+        tail: ListNode = head
 
         for v in values[1:]:
-            tail.next = Node(v)
+            tail.next = ListNode(v)
             tail = tail.next
 
-        return head
+        return head, tail
 
-    @classmethod
-    def get_tail(cls, node: "Node") -> "Node":
-        while node.next:
-            node = node.next
+    def __init__(self, value: int, next: "ListNode | None" = None):
+        """
+        Initialze the linked list node with the given value and optional next node
 
-        return node
-
-    def __init__(self, value: int, next: "Node | None" = None):
-        self.value = value
-        self.next = next
+        Args:
+            value (int): Value of the current node
+            next (ListNode | None): Optional next node of the current node
+        """
+        self.value: int = value
+        self.next: "ListNode | None" = next

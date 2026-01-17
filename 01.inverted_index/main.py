@@ -1,6 +1,6 @@
 import sys
 import random
-from inverted_index import InvertedIndex
+from inverted_index import InvertedIndex, T_document
 from pathlib import Path
 from usage import print_usage
 import time
@@ -14,7 +14,7 @@ def database_file(d: Path | str) -> Path:
     return Path(d) / "database.json"
 
 
-def read_dataset(dataset_file: Path | str) -> list[dict[str, str]]:
+def read_dataset(dataset_file: Path | str) -> list[T_document]:
     with open(dataset_file, "r", encoding="latin-1") as f:
         data = f.readlines()
 
@@ -50,6 +50,7 @@ if __name__ == "__main__":
         exit(1)
 
     ir = InvertedIndex()
+    ir.info()
 
     if sys.argv[1] == "index":
         if len(sys.argv) != 4:
@@ -218,3 +219,5 @@ if __name__ == "__main__":
     else:
         print_usage()
         exit(3)
+
+    print(f"Vocabulary size: {len(ir.get_vocab())}")

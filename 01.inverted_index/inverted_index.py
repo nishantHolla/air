@@ -1,3 +1,5 @@
+import math
+from typing import TypedDict
 import string
 import json
 from pathlib import Path
@@ -8,8 +10,19 @@ from nltk.stem import WordNetLemmatizer
 
 from list_node import ListNode
 
-T_index = dict[str, dict[str, ListNode]]
-T_document = dict[str, str]
+
+class T_posting(TypedDict):
+    tail: ListNode
+    nodes: ListNode
+    length: int
+
+
+class T_document(TypedDict):
+    name: str
+    review: str
+
+
+T_index = dict[str, T_posting]
 T_database = list[T_document]
 T_vocab = set[str]
 
@@ -28,6 +41,7 @@ class InvertedIndex:
         )
         self.REMOVE_STOP_WORDS: bool = True
         self.LEMMATIZE: bool = True
+        self.USE_SKIP_LIST: bool = True
 
     def _nltk_setup(self) -> None:
         """Download required nltk modules and setup stopwords and lemmatizer"""
@@ -87,9 +101,23 @@ class InvertedIndex:
                 b_node = b_node.next
 
             elif a_node.value < b_node.value:
-                a_node = a_node.next
+                if (
+                    self.USE_SKIP_LIST
+                    and a_node.skip
+                    and a_node.skip.value < b_node.value
+                ):
+                    a_node = a_node.skip
+                else:
+                    a_node = a_node.next
             else:
-                b_node = b_node.next
+                if (
+                    self.USE_SKIP_LIST
+                    and b_node.skip
+                    and b_node.skip.value < a_node.value
+                ):
+                    b_node = b_node.skip
+                else:
+                    b_node = b_node.next
 
         return result
 
@@ -174,6 +202,16 @@ class InvertedIndex:
 
         return result
 
+    def info(self) -> None:
+        """Print information about the implementation of the class to stdout"""
+        print(f"Remove stop words: {self.REMOVE_STOP_WORDS}")
+        print(f"Perform Lemmatization: {self.LEMMATIZE}")
+        print("Index data structure: HashMap")
+        print("Posting data structure: Linked List")
+        print(f"Use skip list: {self.USE_SKIP_LIST}")
+
+        print()
+
     def index(self, documents: list[T_document]) -> None:
         """
         Index a list of documents to build its postings
@@ -192,10 +230,16 @@ class InvertedIndex:
             for token in tokens:
                 n: ListNode = ListNode(document_id)
                 if token not in self._index:
-                    self._index[token] = {"tail": n, "nodes": n}
+                    self._index[token] = {"tail": n, "nodes": n, "length": 1}
                 else:
                     self._index[token]["tail"].next = n
                     self._index[token]["tail"] = n
+                    self._index[token]["length"] += 1
+
+        if self.USE_SKIP_LIST:
+            for _, v in self._index.items():
+                skip_n: int = math.floor(math.sqrt(v["length"]))
+                ListNode.make_skips(v["nodes"], skip_n)
 
     def save(self, index_path: Path | str, database_path: Path | str) -> None:
         """
@@ -232,9 +276,12 @@ class InvertedIndex:
             index = json.load(f)
 
         for k, v in index.items():
-            head, tail = ListNode.from_list(v)
+            head, tail, length = ListNode.from_list(v)
             if head and tail:
-                self._index[k] = {"tail": tail, "nodes": head}
+                self._index[k] = {"tail": tail, "nodes": head, "length": length}
+                if self.USE_SKIP_LIST:
+                    skip_n: int = math.floor(math.sqrt(length))
+                    ListNode.make_skips(head, skip_n)
 
         self._vocab = set(self._index.keys())
 

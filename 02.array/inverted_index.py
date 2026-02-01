@@ -221,6 +221,8 @@ class InvertedIndex:
         print("Posting data structure: Array")
         print(f"Use skip list: {self.USE_SKIP_LIST}")
         print(f"Use set operations: {self.USE_SET_OPERATIONS}")
+        print("Implements phrased queries: No")
+        print("Implements tolerant retrieval: No")
 
         print()
 

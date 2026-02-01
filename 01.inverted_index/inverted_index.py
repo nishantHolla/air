@@ -209,6 +209,8 @@ class InvertedIndex:
         print("Index data structure: HashMap")
         print("Posting data structure: Linked List")
         print(f"Use skip list: {self.USE_SKIP_LIST}")
+        print("Implements phrased queries: No")
+        print("Implements tolerant retrieval: No")
 
         print()
 

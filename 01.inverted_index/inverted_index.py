@@ -41,7 +41,7 @@ class InvertedIndex:
         )
         self.REMOVE_STOP_WORDS: bool = True
         self.LEMMATIZE: bool = True
-        self.USE_SKIP_LIST: bool = True
+        self.USE_SKIP_LIST: bool = False
 
     def _nltk_setup(self) -> None:
         """Download required nltk modules and setup stopwords and lemmatizer"""

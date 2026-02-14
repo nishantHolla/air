@@ -32,7 +32,7 @@ class InvertedIndex:
         )
         self.REMOVE_STOP_WORDS: bool = True
         self.LEMMATIZE: bool = True
-        self.USE_SKIP_LIST: bool = True
+        self.USE_SKIP_LIST: bool = False  # Always false
         self.USE_SET_OPERATIONS: bool = False
 
     def _nltk_setup(self) -> None:

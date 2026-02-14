@@ -21,3 +21,7 @@ pip install uv
 ```bash
 uv sync
 ```
+
+## Assignments
+
+- Report for Assignment 1 can be found [here](./Assignment_1_Report.pdf)

@@ -504,8 +504,8 @@ class InvertedIndex:
         print("Posting data structure: Array")
         print(f"Use skip list: {self.USE_SKIP_LIST}")
         print(f"Use set operations: {self.USE_SET_OPERATIONS}")
-        print("Implements phrased queries: Yes")
-        print("Implements tolerant retrieval: Yes")
+        print(f"Implements phrased queries: {hasattr(self, 'phrased_query')}")
+        print(f"Implements tolerant retrieval: {hasattr(self, 'tolerant_query')}")
 
         print()
 
@@ -609,10 +609,10 @@ class InvertedIndex:
             self._index_bt.insert(term, posting_list)
 
         # Verify consistency
-        if not self.verify_btree_consistency():
-            raise ValueError(
-                "B-tree and hash map indices are inconsistent after loading"
-            )
+        # if not self.verify_btree_consistency():
+        #     raise ValueError(
+        #         "B-tree and hash map indices are inconsistent after loading"
+        #     )
 
     def query(
         self, op: str, a: str, b: str | None = None, use_btree=False

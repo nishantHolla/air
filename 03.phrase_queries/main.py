@@ -53,7 +53,7 @@ def phrased_query(index_dir: Path | str) -> int:
     q = input("Enter phrased query:")
 
     result = ir.phrased_query(q)
-    for r in result:
+    for r, p in result:
         print(f"{r['name']}\n{r['review']}\n\n")
 
     print(f"Found {len(result)} results")

@@ -72,7 +72,7 @@ def tolerant_query(index_dir: Path | str) -> int:
     t = int(input("Enter tolerance value (0: No tolerance): "))
 
     result, tolerance = ir.tolerant_query(q, t)
-    for r in result:
+    for r in result[:100]:
         print(f"{r['name']}\n{r['review']}\n\n")
 
     print(f"Found {len(result)} results")

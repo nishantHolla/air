@@ -1,5 +1,6 @@
 from pathlib import Path
 from inverted_index import T_document
+import sys
 
 
 def index_file(d: Path | str) -> Path:

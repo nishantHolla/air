@@ -346,7 +346,7 @@ class InvertedIndex:
 
         return documents
 
-    def phrased_query(self, query: str) -> list[T_document]:
+    def phrased_query(self, query: str) -> list[tuple[T_document, T_posting]]:
         """
         Perform phrased query search with the given query string to get the resultant list of documents
 
@@ -366,9 +366,9 @@ class InvertedIndex:
         for i, token in enumerate(query_tokens[1:]):
             result = self._phrase_merge(result, self._index[token], i)
 
-        documents: list[T_document] = []
+        documents: list[tuple[T_document, T_posting]] = []
         for i in result:
-            documents.append(self._database[i["doc_id"]])
+            documents.append((self._database[i["doc_id"]], i))
 
         return documents
 
